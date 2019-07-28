@@ -1,6 +1,8 @@
 #include <iostream>
 #include <unistd.h>
+#include <vector>
 using std::cout;
+using namespace std;
 
 int main(int argc, char const *argv[])
 {
@@ -20,5 +22,6 @@ int main(int argc, char const *argv[])
      * 
      */
     cout << sysconf(_SC_CLK_TCK) << "\n";
+    (vector<string>());
     return 0;
 }
