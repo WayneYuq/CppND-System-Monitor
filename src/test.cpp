@@ -1,5 +1,6 @@
 #include <iostream>
 #include <unistd.h>
+<<<<<<< HEAD
 #include <fstream>
 #include <sstream>
 #include <algorithm>
@@ -20,7 +21,11 @@
 #include <dirent.h>
 #include <time.h>
 #include <unistd.h>
+=======
+#include <vector>
+>>>>>>> fbd69762fde89e093fbaab47c51b13cd1d84de93
 using std::cout;
+using namespace std;
 
 int main(int argc, char const *argv[])
 {
@@ -39,7 +44,6 @@ int main(int argc, char const *argv[])
         {
             cout << values[i] << "\n";
         }
-        
     }
     return 0;
 }
