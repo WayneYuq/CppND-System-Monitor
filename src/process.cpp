@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-#include "process.h"
+#include "../include/process.h"
 
 using std::string;
 using std::to_string;

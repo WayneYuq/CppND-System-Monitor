@@ -1,4 +1,8 @@
-#include "Process.h"
+#ifndef PROCESSCONTAINER_H
+#define PROCESSCONTAINER_H
+
+#include "process.h"
+#include "ProcessParser.h"
 #include <string>
 #include <vector>
 using std::string;
@@ -30,7 +34,7 @@ void ProcessContainer::refreshList()
 string ProcessContainer::printList()
 {
     std::string result="";
-    for (auto i : _lists) {
+    for (auto i : _list) {
         result += i.getProcess();
     }
     return result;
@@ -40,7 +44,9 @@ vector<string> ProcessContainer::getList()
 {
     vector<string> values;
     for (int i = (this->_list.size()-10); i < this->_list.size(); i++){
-        values.push_back(this->_list[i].get_process());
+        values.push_back(this->_list[i].getProcess());
     }
     return values;
 }
+
+#endif // PROCESSCONTAINER_H

@@ -1,3 +1,6 @@
+#ifndef PROCESSPARSER_H
+#define PROCESSPARSER_H
+
 #include <algorithm>
 #include <iostream>
 #include <math.h>
@@ -16,7 +19,7 @@
 #include <dirent.h>
 #include <time.h>
 #include <unistd.h>
-#include <constants.h>
+#include "constants.h"
 
 class ProcessParser {
     public:
@@ -35,4 +38,7 @@ class ProcessParser {
         static int getNumberOfRunningProcesses();
         static string getOsName();
         static std::string printCpuStats(std::vector<std::string> values1, std::vector<std::string>values2);
+        static int getNumberOfCores();
 };
+
+#endif // PROCESSPARSER_H

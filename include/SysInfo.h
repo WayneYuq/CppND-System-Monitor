@@ -1,3 +1,13 @@
+#ifndef SYSINFO_H
+#define SYSINFO_H
+
+#include <vector>
+#include <string>
+#include "ProcessParser.h"
+
+using std::vector;
+using std::string;
+
 class SysInfo {
     private:
         vector<string> lastCpuStats;
@@ -21,7 +31,7 @@ class SysInfo {
             Initial data for individual cores is set
             System data is set
             */
-            this->getOtherCores(getNumberOfCores());
+            this->getOtherCores(ProcessParser::getNumberOfCores());
             this->setLastCpuMeasures();
             this->setAttributes();
             this->osName = ProcessParser::getOsName();
@@ -41,3 +51,5 @@ class SysInfo {
         void setCpuCoresStats();
         vector<string> getCoresStats() const;
 };
+
+#endif // SYSINFO_H

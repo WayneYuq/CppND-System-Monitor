@@ -1,11 +1,22 @@
-#include "ncurses_display.h"
-#include "system.h"
+#include "../include/ncurses_display.h"
+#include "../include/system.h"
+#include "../include/SysInfo.h"
+#include "../include/util.h"
+#include "../include/ProcessContainer.h"
+#include "ncurses.h"
+
+char* getCString(std::string str)
+{
+    char *c_str = new char[str.length() + 1];
+    strcpy(c_str, str.c_str());
+    return c_str;
+}
 
 void writeSysInfoToConsole(SysInfo sys, WINDOW* sys_win)
 {
     sys.setAttributes();
 
-    mvwprintw(sys_win,2,2,getCString(( "OS: " + sys.getOSName())));
+    mvwprintw(sys_win,2,2,getCString(( "OS: " + sys.getOsName())));
     mvwprintw(sys_win,3,2,getCString(( "Kernel version: " + sys.getKernelVersion())));
     mvwprintw(sys_win,4,2,getCString( "CPU: "));
     wattron(sys_win,COLOR_PAIR(1));
@@ -49,7 +60,7 @@ void printMain(SysInfo sys,ProcessContainer procs)
     initscr(); // start curses mode
     noecho(); // not printing input values
     cbreak(); // Terminating on classic ctrl + c
-    startColor(); // Enabling color change of text
+    start_color(); // Enabling color change of text
     int yMax,xMax;
     getmaxyx(stdscr,yMax,xMax); // getting size of window measured in lines and columns(column one char length)
     WINDOW *sys_win = newwin(17,xMax-1,0,0);
@@ -72,8 +83,8 @@ void printMain(SysInfo sys,ProcessContainer procs)
 }
 
 int main() {
-  System system;
-  NCursesDisplay::Display(system);
+//   System system;
+//   NCursesDisplay::Display(system);
 
   //Object which contains list of current processes, Container for Process Class
   ProcessContainer procs;
