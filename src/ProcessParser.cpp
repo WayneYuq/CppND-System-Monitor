@@ -1,14 +1,18 @@
-#include "../include/ProcessParser.h"
+#include "ProcessParser.h"
 #include <vector>
 #include <string>
+#include <sstream>
+#include <fstream>
+#include "util.h"
 
 using std::string;
 using std::to_string;
 using std::vector;
 using std::getline;
 using std::istringstream;
+using std::ifstream;
 
-string ProcessParse::getVmSize(string pid)
+string ProcessParser::getVmSize(string pid)
 {
     string line;
     string name {"VmData"};
@@ -28,7 +32,7 @@ string ProcessParse::getVmSize(string pid)
     return to_string(result);
 }
 
-string ProcessParse::getCpuPercent(string pid)
+string ProcessParser::getCpuPercent(string pid)
 {
     string line;
     float result;
@@ -39,12 +43,12 @@ string ProcessParse::getCpuPercent(string pid)
     vector<string> values(beg, end);
 
     // acquiring relevant times for calculation of active occupation of CPU for selected process
-    float utime = stof(ProcessParse::getProcUpTime(pid)); // 该任务在用户态运行的时间，单位为jiffies
+    float utime = stof(ProcessParser::getProcUpTime(pid)); // 该任务在用户态运行的时间，单位为jiffies
     float stime = stof(values[14]); // 该任务在核心态运行的时间，单位为jiffies
     float cutime = stof(values[15]); // 所有已死线程在用户态运行的时间，单位为jiffies
     float cstime = stof(values[16]); // 所有已死在核心态运行的时间，单位为jiffies
     float starttime = stof(values[21]);
-    float uptime = ProcessParse::getSysUpTime();
+    float uptime = ProcessParser::getSysUpTime();
     float freq = sysconf(_SC_CLK_TCK); // 时钟滴答的频率（HZ）：也即1秒时间内PIT所产生的时钟滴答次数
     float total_time = utime + stime + cutime + cstime; // 进程的总Cpu时间，该值包括其所有线程的cpu时间。
     float seconds = uptime - (starttime / freq);
@@ -54,7 +58,7 @@ string ProcessParse::getCpuPercent(string pid)
 }
 
 // 该任务在用户态运行的时间，单位为jiffies
-string ProcessParse::getProcUpTime(string pid)
+string ProcessParser::getProcUpTime(string pid)
 {
     string line;
     ifstream stream = Util::getStream((Path::basePath() + pid + "/" + Path::statPath()));
@@ -68,7 +72,7 @@ string ProcessParse::getProcUpTime(string pid)
 }
 
 // 系统运行时间
-long int ProcessParse::getSysUpTime()
+long int ProcessParser::getSysUpTime()
 {
     string line;
     ifstream stream = Util::getStream((Path::basePath() + Path::upTimePath()));
@@ -80,7 +84,7 @@ long int ProcessParse::getSysUpTime()
     return stoi(values[0]);
 }
 
-string ProcessParse::getProcUser(string pid)
+string ProcessParser::getProcUser(string pid)
 {
     string line;
     string name = "Uid:";
@@ -109,7 +113,7 @@ string ProcessParse::getProcUser(string pid)
     }
 }
 
-static vector<string> ProcessParse::getPidList()
+vector<string> ProcessParser::getPidList()
 {
     DIR* dir;
     // Basically, we are scanning /proc dir for all directories with numbers as their names
@@ -134,7 +138,7 @@ static vector<string> ProcessParse::getPidList()
     return container;
 }
 
-string ProcessParse::getCmd(string pid)
+string ProcessParser::getCmd(string pid)
 {
     string line;
     ifstream stream = Util::getStream((Path::basePath() + pid + Path::cmdPath()));
@@ -142,7 +146,7 @@ string ProcessParse::getCmd(string pid)
     return line;
 }
 
-int ProcessParse::getNumberOfCores()
+int ProcessParser::getNumberOfCores()
 {
     string line;
     string name = "cpu cores";
@@ -159,7 +163,7 @@ int ProcessParse::getNumberOfCores()
     return 0;
 }
 
-vector<string> ProcessParser::getSysCpuPercent(string coreNumber)
+vector<string> ProcessParserr::getSysCpuPercent(string coreNumber)
 {
     // It is possible to use this method for selection of data for overall cpu or every core.
     // when nothing is passed "cpu" line is read
@@ -196,7 +200,7 @@ float get_sys_idle_cpu_time(vector<string> values)
     return (stof(values[s_IDLE]) + stof(values[S_IOWAIT]));
 }
 
-string ProcessParse::printCpuStats(vector<string> values1, vector<string> values2)
+string ProcessParser::printCpuStats(vector<string> values1, vector<string> values2)
 {
     float activeTime = get_sys_active_cpu_time(values2) - get_sys_active_cpu_time(values1);
     float idleTime = get_sys_idle_cpu_time(values2) - get_sys_idle_cpu_time(values1);
@@ -205,7 +209,7 @@ string ProcessParse::printCpuStats(vector<string> values1, vector<string> values
     return to_string(result);
 }
 
-float ProcessParser::getSysRamPercent()
+float ProcessParserr::getSysRamPercent()
 {
     string line;
     string name1 = "MemAvailable:";
@@ -244,7 +248,7 @@ float ProcessParser::getSysRamPercent()
     return float(100.0*(1-(free_mem/(total_mem-buffers))));
 }
 
-string ProcessParser::getSysKernelVersion()
+string ProcessParserr::getSysKernelVersion()
 {
     string line;
     string name = "Linux version ";
@@ -260,7 +264,7 @@ string ProcessParser::getSysKernelVersion()
     return "";
 }
 
-string ProcessParser::getOsName()
+string ProcessParserr::getOsName()
 {
     string line;
     string name = "PRETTY_NAME=";
@@ -280,12 +284,12 @@ string ProcessParser::getOsName()
 
 }
 
-int ProcessParser::getTotalThreads()
+int ProcessParserr::getTotalThreads()
 {
     string line;
     int result = 0;
     string name = "Threads:";
-    vector<string>_list = ProcessParser::getPidList();
+    vector<string>_list = ProcessParserr::getPidList();
     for (int i=0 ; i<_list.size();i++) {
         string pid = _list[i];
         //getting every process and reading their number of their threads
@@ -303,7 +307,7 @@ int ProcessParser::getTotalThreads()
     return result;
 }
 
-int ProcessParser::getTotalNumberOfProcesses()
+int ProcessParserr::getTotalNumberOfProcesses()
 {
     string line;
     int result = 0;
@@ -321,7 +325,7 @@ int ProcessParser::getTotalNumberOfProcesses()
     return result;
 }
 
-int ProcessParser::getNumberOfRunningProcesses()
+int ProcessParserr::getNumberOfRunningProcesses()
 {
     string line;
     int result = 0;
