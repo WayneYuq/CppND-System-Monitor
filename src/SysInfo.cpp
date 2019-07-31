@@ -1,4 +1,5 @@
-#include "SysInfo.h"
+#include "../include/SysInfo.h"
+#include "../include/util.h"
 
 string SysInfo::getCpuPercent() const 
 {
@@ -7,7 +8,7 @@ string SysInfo::getCpuPercent() const
 
 string SysInfo::getMemPercent() const 
 {
-    return to_string(this->memPercent);
+    return std::to_string(this->memPercent);
 }
 
 long SysInfo::getUpTime() const 
@@ -22,17 +23,17 @@ string SysInfo::getKernelVersion() const
 
 string SysInfo::getTotalProc() const 
 {
-    return to_string(this->totalProc);
+    return std::to_string(this->totalProc);
 }
 
 string SysInfo::getRunningProc() const 
 {
-    return to_string(this->runningProc);
+    return std::to_string(this->runningProc);
 }
 
 string SysInfo::getThreads() const 
 {
-    return to_string(this->threads);
+    return std::to_string(this->threads);
 }
 
 string SysInfo::getOsName() const 
@@ -52,14 +53,14 @@ void SysInfo::setLastCpuMeasures()
 void SysInfo::getOtherCores(int _size)
 {
     //when number of cores is detected, vectors are modified to fit incoming data
-    this->coresStats = vector<string>();
-    this->coresStats.resize(_size);
+    this->cores_stats = vector<string>();
+    this->cores_stats.resize(_size);
     this->lastCpuCoresStats = vector<vector<string>>();
     this->lastCpuCoresStats.resize(_size);
     this->currentCpuCoresStats = vector<vector<string>>();
     this->currentCpuCoresStats.resize(_size);
     for (int i = 0; i < _size; i++) {
-        this->lastCpuCoresStats[i] = ProcessParser::getSysCpuPercent(to_string(i));
+        this->lastCpuCoresStats[i] = ProcessParser::getSysCpuPercent(std::to_string(i));
     }
 }
 
@@ -69,11 +70,11 @@ void SysInfo::setCpuCoresStats()
 {
     // Getting data from files (previous data is required)
     for(int i = 0; i < this->currentCpuCoresStats.size(); i++) {
-        this->currentCpuCoresStats[i] = ProcessParser::getSysCpuPercent(to_string(i));
+        this->currentCpuCoresStats[i] = ProcessParser::getSysCpuPercent(std::to_string(i));
     }
     for(int i = 0; i < this->currentCpuCoresStats.size(); i++) {
         // after acquirement of data we are calculating every core percentage of usage
-        this->cores_stats[i] = ProcessParser::PrintCpuStats(this->lastCpuCoresStats[i],this->currentCpuCoresStats[i]);
+        this->cores_stats[i] = ProcessParser::printCpuStats(this->lastCpuCoresStats[i],this->currentCpuCoresStats[i]);
     }
     this->lastCpuCoresStats = this->currentCpuCoresStats;
 }
@@ -89,7 +90,7 @@ void SysInfo::setAttributes()
     this->runningProc = ProcessParser::getNumberOfRunningProcesses();
     this->threads = ProcessParser::getTotalThreads();
     this->currentCpuStats = ProcessParser::getSysCpuPercent();
-    this->cpuPercent = ProcessParser::PrintCpuStats(this->lastCpuStats,this->currentCpuStats);
+    this->cpuPercent = ProcessParser::printCpuStats(this->lastCpuStats,this->currentCpuStats);
     this->lastCpuStats = this->currentCpuStats;
     this->setCpuCoresStats();
 }
@@ -98,13 +99,13 @@ void SysInfo::setAttributes()
 vector<string> SysInfo::getCoresStats() const
 {
     vector<string> result = vector<string>();
-    for (int i = 0; i < this->coresStats.size() ;i++) {
-        string temp = ("cpu" + to_string(i) +": ");
+    for (int i = 0; i < this->cores_stats.size() ;i++) {
+        string temp = ("cpu" + std::to_string(i) +": ");
         float check = stof(this->cores_stats[i]);
-        if (!check || this->coresStats[i] == "nan") {
+        if (!check || this->cores_stats[i] == "nan") {
             return vector<string>();
         }
-        temp += Util::getProgressBar(this->coresStats[i]);
+        temp += Util::getProgressBar(this->cores_stats[i]);
         result.push_back(temp);
     }
     return result;

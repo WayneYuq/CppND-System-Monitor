@@ -1,9 +1,12 @@
-#include "ProcessParser.h"
+#include "../include/ProcessParser.h"
 #include <vector>
 #include <string>
 #include <sstream>
 #include <fstream>
-#include "util.h"
+#include <iterator>
+#include <algorithm>
+#include "../include/util.h"
+#include "../include/constants.h"
 
 using std::string;
 using std::to_string;
@@ -11,6 +14,8 @@ using std::vector;
 using std::getline;
 using std::istringstream;
 using std::ifstream;
+using std::istream_iterator;
+using std::stof;
 
 string ProcessParser::getVmSize(string pid)
 {
@@ -23,7 +28,7 @@ string ProcessParser::getVmSize(string pid)
     while(getline(stream, line)) {
         if (line.compare(0, name.size(), name) == 0) {
             istringstream buf(line);
-            std::istream_iterator<string> beg(buf), end;
+            istream_iterator<string> beg(buf), end;
             vector<string> values(beg, end);
             result = (stof(values[1]) / float(1024 * 1024));
             break;
@@ -39,7 +44,7 @@ string ProcessParser::getCpuPercent(string pid)
     ifstream stream = Util::getStream((Path::basePath() + pid + Path::statPath()));
     getline(stream, line);
     istringstream buf(line);
-    std::istream_iterator<string> beg(buf), end;
+    istream_iterator<string> beg(buf), end;
     vector<string> values(beg, end);
 
     // acquiring relevant times for calculation of active occupation of CPU for selected process
@@ -64,7 +69,7 @@ string ProcessParser::getProcUpTime(string pid)
     ifstream stream = Util::getStream((Path::basePath() + pid + "/" + Path::statPath()));
     getline(stream, line);
     istringstream buf(line);
-    std::istring_iterator<string> beg(buf), end;
+    istream_iterator<string> beg(buf), end;
     vector<string> values(beg, end);
 
     // Using sysconf to get clock ticks of the host machine
@@ -78,7 +83,7 @@ long int ProcessParser::getSysUpTime()
     ifstream stream = Util::getStream((Path::basePath() + Path::upTimePath()));
     getline(stream, line);
     istringstream buf(line);
-    std::istring_iterator<string> beg(buf), end;
+    istream_iterator<string> beg(buf), end;
     vector<string> values(beg, end);
 
     return stoi(values[0]);
@@ -94,7 +99,7 @@ string ProcessParser::getProcUser(string pid)
     {
         if (line.compare(0, name.size(), name) == 0) {
             istringstream buf(line);
-            isteam_iterator<string> beg(buf), end;
+            istream_iterator<string> beg(buf), end;
             vector<string> values(beg, end);
             result = values[1];
             break;
@@ -128,7 +133,7 @@ vector<string> ProcessParser::getPidList()
         if (dirp->d_type != DT_DIR)
             continue;
         
-        if (all_of(dirp->d_name, dirp->d_name + std::strlen(dirp->d_name), [](char c){ return std::isdigit(c); }))
+        if (std::all_of(dirp->d_name, dirp->d_name + std::strlen(dirp->d_name), [](char c){ return std::isdigit(c); }))
             container.push_back(dirp->d_name);
     }
 
@@ -163,7 +168,7 @@ int ProcessParser::getNumberOfCores()
     return 0;
 }
 
-vector<string> ProcessParserr::getSysCpuPercent(string coreNumber)
+vector<string> ProcessParser::getSysCpuPercent(string coreNumber)
 {
     // It is possible to use this method for selection of data for overall cpu or every core.
     // when nothing is passed "cpu" line is read
@@ -185,19 +190,19 @@ vector<string> ProcessParserr::getSysCpuPercent(string coreNumber)
 
 float get_sys_active_cpu_time(vector<string> values)
 {
-    return (stof(values[S_USER]) + 
-            stof(values[S_NICE]) +
-            stof(values[S_SYSTEM]) +
-            stof(values[S_IRQ]) +
-            stof(values[S_SOFTIRQ]) +
-            stof(values[S_STEAL]) +
-            stof(values[S_GUEST]) +
-            stof(values[S_GUEST_NICE]));
+    return (stof(values[static_cast<int>(CPUStates::S_USER)]) + 
+            stof(values[static_cast<int>(CPUStates::S_NICE)]) +
+            stof(values[static_cast<int>(CPUStates::S_SYSTEM)]) +
+            stof(values[static_cast<int>(CPUStates::S_IRQ)]) +
+            stof(values[static_cast<int>(CPUStates::S_SOFTIRQ)]) +
+            stof(values[static_cast<int>(CPUStates::S_STEAL)]) +
+            stof(values[static_cast<int>(CPUStates::S_GUEST)]) +
+            stof(values[static_cast<int>(CPUStates::S_GUEST_NICE)]));
 }
 
 float get_sys_idle_cpu_time(vector<string> values)
 {
-    return (stof(values[s_IDLE]) + stof(values[S_IOWAIT]));
+    return (stof(values[static_cast<int>(CPUStates::S_IDLE)]) + stof(values[static_cast<int>(CPUStates::S_IOWAIT)]));
 }
 
 string ProcessParser::printCpuStats(vector<string> values1, vector<string> values2)
@@ -209,7 +214,7 @@ string ProcessParser::printCpuStats(vector<string> values1, vector<string> value
     return to_string(result);
 }
 
-float ProcessParserr::getSysRamPercent()
+float ProcessParser::getSysRamPercent()
 {
     string line;
     string name1 = "MemAvailable:";
@@ -248,7 +253,7 @@ float ProcessParserr::getSysRamPercent()
     return float(100.0*(1-(free_mem/(total_mem-buffers))));
 }
 
-string ProcessParserr::getSysKernelVersion()
+string ProcessParser::getSysKernelVersion()
 {
     string line;
     string name = "Linux version ";
@@ -264,7 +269,7 @@ string ProcessParserr::getSysKernelVersion()
     return "";
 }
 
-string ProcessParserr::getOsName()
+string ProcessParser::getOsName()
 {
     string line;
     string name = "PRETTY_NAME=";
@@ -284,12 +289,12 @@ string ProcessParserr::getOsName()
 
 }
 
-int ProcessParserr::getTotalThreads()
+int ProcessParser::getTotalThreads()
 {
     string line;
     int result = 0;
     string name = "Threads:";
-    vector<string>_list = ProcessParserr::getPidList();
+    vector<string>_list = ProcessParser::getPidList();
     for (int i=0 ; i<_list.size();i++) {
         string pid = _list[i];
         //getting every process and reading their number of their threads
@@ -307,7 +312,7 @@ int ProcessParserr::getTotalThreads()
     return result;
 }
 
-int ProcessParserr::getTotalNumberOfProcesses()
+int ProcessParser::getTotalNumberOfProcesses()
 {
     string line;
     int result = 0;
@@ -325,7 +330,7 @@ int ProcessParserr::getTotalNumberOfProcesses()
     return result;
 }
 
-int ProcessParserr::getNumberOfRunningProcesses()
+int ProcessParser::getNumberOfRunningProcesses()
 {
     string line;
     int result = 0;

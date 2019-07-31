@@ -12,7 +12,7 @@ class SysInfo {
     private:
         vector<string> lastCpuStats;
         vector<string> currentCpuStats;
-        vector<string> coresStats;
+        vector<string> cores_stats;
         vector<vector<string>> lastCpuCoresStats;
         vector<vector<string>> currentCpuCoresStats;
         string cpuPercent;
