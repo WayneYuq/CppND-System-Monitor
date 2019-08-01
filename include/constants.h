@@ -5,7 +5,7 @@
 using std::string;
     
 enum class CPUStates{
-    S_USER,
+    S_USER = 1,
     S_NICE,
     S_SYSTEM,
     S_IDLE,

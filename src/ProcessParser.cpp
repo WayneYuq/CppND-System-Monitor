@@ -24,7 +24,7 @@ string ProcessParser::getVmSize(string pid)
     string value;
     float result;
 
-    ifstream stream = Util::getStream((Path::basePath() + pid + Path::statusPath()));
+    ifstream stream = Util::getStream((Path::basePath() + pid + "/" + Path::statusPath()));
     while(getline(stream, line)) {
         if (line.compare(0, name.size(), name) == 0) {
             istringstream buf(line);
@@ -41,7 +41,7 @@ string ProcessParser::getCpuPercent(string pid)
 {
     string line;
     float result;
-    ifstream stream = Util::getStream((Path::basePath() + pid + Path::statPath()));
+    ifstream stream = Util::getStream((Path::basePath() + pid + "/" + Path::statPath()));
     getline(stream, line);
     istringstream buf(line);
     istream_iterator<string> beg(buf), end;
@@ -124,7 +124,7 @@ vector<string> ProcessParser::getPidList()
     // Basically, we are scanning /proc dir for all directories with numbers as their names
     // If we get valid check we store dir names in vector as list of machine pids
     vector<string> container;
-    if(!(dir == opendir("/proc")))
+    if(!(dir = opendir("/proc")))
         throw std::runtime_error(std::strerror(errno));
 
     while (dirent* dirp = readdir(dir))
@@ -146,7 +146,7 @@ vector<string> ProcessParser::getPidList()
 string ProcessParser::getCmd(string pid)
 {
     string line;
-    ifstream stream = Util::getStream((Path::basePath() + pid + Path::cmdPath()));
+    ifstream stream = Util::getStream((Path::basePath() + pid + "/" + Path::cmdPath()));
     getline(stream, line);
     return line;
 }
@@ -188,7 +188,7 @@ vector<string> ProcessParser::getSysCpuPercent(string coreNumber)
     return (vector<string>());
 }
 
-float get_sys_active_cpu_time(vector<string> values)
+float ProcessParser::getSysActiveCpuTime(vector<string> values)
 {
     return (stof(values[static_cast<int>(CPUStates::S_USER)]) + 
             stof(values[static_cast<int>(CPUStates::S_NICE)]) +
@@ -200,17 +200,17 @@ float get_sys_active_cpu_time(vector<string> values)
             stof(values[static_cast<int>(CPUStates::S_GUEST_NICE)]));
 }
 
-float get_sys_idle_cpu_time(vector<string> values)
+float ProcessParser::getSysIdleCpuTime(vector<string> values)
 {
     return (stof(values[static_cast<int>(CPUStates::S_IDLE)]) + stof(values[static_cast<int>(CPUStates::S_IOWAIT)]));
 }
 
 string ProcessParser::printCpuStats(vector<string> values1, vector<string> values2)
 {
-    float activeTime = get_sys_active_cpu_time(values2) - get_sys_active_cpu_time(values1);
-    float idleTime = get_sys_idle_cpu_time(values2) - get_sys_idle_cpu_time(values1);
+    float activeTime = getSysActiveCpuTime(values2) - getSysActiveCpuTime(values1);
+    float idleTime = getSysIdleCpuTime(values2) - getSysIdleCpuTime(values1);
     float totalTime = activeTime + idleTime;
-    float result = 100.0 * (activeTime / totalTime);
+    float result = 100.0*(activeTime / totalTime);
     return to_string(result);
 }
 
@@ -298,7 +298,7 @@ int ProcessParser::getTotalThreads()
     for (int i=0 ; i<_list.size();i++) {
         string pid = _list[i];
         //getting every process and reading their number of their threads
-        ifstream stream = Util::getStream((Path::basePath() + pid + Path::statusPath()));
+        ifstream stream = Util::getStream((Path::basePath() + pid + "/" + Path::statusPath()));
         while (getline(stream, line)) {
             if (line.compare(0, name.size(), name) == 0) {
                 istringstream buf(line);

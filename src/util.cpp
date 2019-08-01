@@ -1,4 +1,5 @@
 #include "../include/util.h"
+#include <iostream>
 
 std::string Util::convertToTime (long int input_seconds)
 {
@@ -36,7 +37,8 @@ std::string Util::getProgressBar(std::string percent)
 std::ifstream Util::getStream(std::string path)
 {
     std::ifstream stream(path);
-    if  (!stream) {
+    if (!stream) {
+        std::cout << "path: " << path << "\n";
         throw std::runtime_error("Non - existing PID");
     }
     return stream;
